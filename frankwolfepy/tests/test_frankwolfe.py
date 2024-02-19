@@ -14,4 +14,3 @@ def test_simple_frankwolfe():
     x0 = frankwolfe.compute_extreme_point(lmo_prob,np.zeros(5))
     
     assert(frankwolfe.frank_wolfe(f,grad,lmo_prob,x0,max_iteration=1000,line_search=frankwolfe.Agnostic(),verbose=False,)[3] - 0.2 < 1.0e-5 )
-    
