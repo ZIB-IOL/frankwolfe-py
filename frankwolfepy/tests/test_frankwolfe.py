@@ -1,8 +1,6 @@
 from frankwolfepy import frankwolfe
+from frankwolfepy import wrapper
 import numpy as np
-import juliacall
-jl = juliacall.newmodule("FK")
-jl.seval("using PythonCall")
 
 def test_simple_frankwolfe():
     
@@ -16,9 +14,7 @@ def test_simple_frankwolfe():
     lmo_prob = frankwolfe.ProbabilitySimplexOracle(1)
     x0 = frankwolfe.compute_extreme_point(lmo_prob,np.zeros(5))
     
-    f = jl.seval("f -> x -> pyconvert(Float64, f(x))")(f)
-
-    assert(frankwolfe.frank_wolfe(f,grad,lmo_prob,x0,max_iteration=1000,line_search=frankwolfe.Agnostic(),verbose=True,)[3] - 0.2 < 1.0e-5 )
+    assert(frankwolfe.frank_wolfe(wrapper.wrap_obj_func(f),grad,lmo_prob,x0,max_iteration=1000,line_search=frankwolfe.Agnostic(),verbose=True,)[3] - 0.2 < 1.0e-5 )
 
 def test_lazified_cond_grad():
 
@@ -33,9 +29,7 @@ def test_lazified_cond_grad():
     x0 = frankwolfe.compute_extreme_point(lmo_prob,np.zeros(5))
     
     
-    f = jl.seval("f -> x -> pyconvert(Float64, f(x))")(f)
-
-    assert(frankwolfe.lazified_conditional_gradient(f,grad,lmo_prob,x0,max_iteration=1000,verbose=True,)[3] - 0.2 < 1.0e-5 )
+    assert(frankwolfe.lazified_conditional_gradient(wrapper.wrap_obj_func(f),grad,lmo_prob,x0,max_iteration=1000,verbose=True,)[3] - 0.2 < 1.0e-5 )
 
 
 
@@ -56,7 +50,7 @@ def test_blended_cg():
     def grad(storage, x):
         storage[:] = np.add(linear,np.matmul(hessian,np.transpose(x)))
     
-    f = jl.seval("f -> x -> pyconvert(Float64, f(x))")(f)
+    f = wrapper.wrap_obj_func(f)
 
     L = max(np.linalg.eigvals(hessian))
 
@@ -138,7 +132,7 @@ def test_away_step_frankwolfe():
     def grad(storage, x):
         storage[:] = 2 * (x - xp)
 
-    f = jl.seval("f -> x -> pyconvert(Float64, f(x))")(f)
+    f = wrapper.wrap_obj_func(f)
 
     lmo = frankwolfe.KSparseLMO(number_nonzero, 1.0)
 
