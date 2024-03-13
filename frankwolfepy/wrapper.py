@@ -1,5 +1,5 @@
 import juliacall
-jl = juliacall.newmodule("FK")
+jl = juliacall.newmodule("FW")
 jl.seval("using PythonCall")
 
 def wrap_obj_func(f):
