@@ -1,35 +1,41 @@
 from frankwolfepy import frankwolfe
 from frankwolfepy import wrapper
 import numpy as np
+import copy
 
 def test_simple_frankwolfe():
+
+    n = int(1e2)
+    k = int(1e4)
     
     def f(x):
-        return frankwolfe.norm(x)**2
+        return np.linalg.norm(x)**2
 
     def grad(storage,x):
         for i in range(len(x)):
             storage[i] = x[i]
 
     lmo_prob = frankwolfe.ProbabilitySimplexOracle(1)
-    x0 = frankwolfe.compute_extreme_point(lmo_prob,np.zeros(5))
+    x0 = frankwolfe.compute_extreme_point(lmo_prob,np.zeros(n))
     
-    assert(frankwolfe.frank_wolfe(wrapper.wrap_obj_func(f),grad,lmo_prob,x0,max_iteration=1000,line_search=frankwolfe.Agnostic(),verbose=True,)[3] - 0.2 < 1.0e-5 )
+    assert(frankwolfe.frank_wolfe(wrapper.wrap_objective_function(f),grad,lmo_prob,x0,max_iteration=k,line_search=frankwolfe.Agnostic(),verbose=True,)[3] - 0.2 < 1.0e-5 )
 
 def test_lazified_cond_grad():
 
+    n = int(1e2)
+    k = int(1e4)
+
     def f(x):
-        return frankwolfe.norm(x)*frankwolfe.norm(x)
+        return np.linalg.norm(x)**2
 
     def grad(storage,x):
-        for i in range(len(x)):
-            storage[i] = x[i]
+        storage[:] = x
 
     lmo_prob = frankwolfe.ProbabilitySimplexOracle(1)
-    x0 = frankwolfe.compute_extreme_point(lmo_prob,np.zeros(5))
+    x0 = frankwolfe.compute_extreme_point(lmo_prob,np.zeros(n))
     
     
-    assert(frankwolfe.lazified_conditional_gradient(wrapper.wrap_obj_func(f),grad,lmo_prob,x0,max_iteration=1000,verbose=True,)[3] - 0.2 < 1.0e-5 )
+    assert(frankwolfe.lazified_conditional_gradient(wrapper.wrap_objective_function(f),grad,lmo_prob,x0,max_iteration=k,verbose=True,)[3] - 0.2 < 1.0e-5 )
 
 
 
@@ -50,13 +56,14 @@ def test_blended_cg():
     def grad(storage, x):
         storage[:] = np.add(linear,np.matmul(hessian,np.transpose(x)))
     
-    f = wrapper.wrap_obj_func(f)
+    f = wrapper.wrap_objective_function(f)
 
     L = max(np.linalg.eigvals(hessian))
 
     lmo = frankwolfe.ProbabilitySimplexOracle(1.0)
     x0 = frankwolfe.compute_extreme_point(lmo, np.zeros(n))
     
+    x00 = copy.deepcopy(x0)
 
     target_tolerance = 1e-5
 
@@ -78,6 +85,7 @@ def test_blended_cg():
         weight_purge_threshold=1e-10,
     )
 
+    x00 = copy.deepcopy(x0)
     
     x, v, primal, dual_gap, trajectoryBCG_simplex, _ = frankwolfe.blended_conditional_gradient(
         f,
@@ -97,6 +105,7 @@ def test_blended_cg():
         weight_purge_threshold=1e-10,
     )
 
+    x00 = copy.deepcopy(x0)
     
     x, v, primal, dual_gap, trajectoryBCG_convex, _ = frankwolfe.blended_conditional_gradient(
         f,
@@ -118,9 +127,9 @@ def test_blended_cg():
 
 def test_away_step_frankwolfe():
     
-    n = int(1e4)
-    k = int(2e3)
-    number_nonzero = 40
+    n = int(1e2)
+    k = int(1e4)
+
 
     xpi = np.random.rand(n)
     total = sum(xpi)
@@ -132,19 +141,37 @@ def test_away_step_frankwolfe():
     def grad(storage, x):
         storage[:] = 2 * (x - xp)
 
-    f = wrapper.wrap_obj_func(f)
+    f = wrapper.wrap_objective_function(f)
 
-    lmo = frankwolfe.KSparseLMO(number_nonzero, 1.0)
+    lmo = frankwolfe.KSparseLMO(40, 1.0)
 
-    x0 = frankwolfe.compute_extreme_point(lmo, np.ones(n))
+    x0 = frankwolfe.compute_extreme_point(lmo, np.zeros(n))
     
+    x00 = copy.deepcopy(x0)
+
+    x, v, primal, dual_gap, trajectory = frankwolfe.frank_wolfe(
+        f,
+        grad,
+        lmo,
+        x00,
+        max_iteration=k,
+        line_search=frankwolfe.Adaptive(L_est=100.0),
+        print_iter=k / 10,
+        memory_mode=frankwolfe.InplaceEmphasis(),
+        verbose=True,
+        epsilon=1e-5,
+        trajectory=True,
+    )
+
+    x00 = copy.deepcopy(x0)
+
     x, v, primal, dual_gap, trajectory, active_set = frankwolfe.away_frank_wolfe(
         f,
         grad,
         lmo,
-        x0,
+        x00,
         max_iteration=k,
-        line_search=frankwolfe.Adaptive(),
+        line_search=frankwolfe.Adaptive(L_est=100.0),
         print_iter=k / 10,
         epsilon=1e-5,
         memory_mode=frankwolfe.InplaceEmphasis(),
@@ -153,13 +180,15 @@ def test_away_step_frankwolfe():
         lazy=True,
     )
 
-    x, v, primal, dual_gap, trajectoryAFW, active_set = frankwolfe.away_frank_wolfe(
+    x00 = copy.deepcopy(x0)
+
+    x, v, primal, dual_gap, trajectory_away, active_set = frankwolfe.away_frank_wolfe(
         f,
         grad,
         lmo,
-        x0,
+        x00,
         max_iteration=k,
-        line_search=frankwolfe.Adaptive(),
+        line_search=frankwolfe.Adaptive(L_est=100.0),
         print_iter=k / 10,
         epsilon=1e-5,
         memory_mode=frankwolfe.InplaceEmphasis(),
@@ -168,18 +197,21 @@ def test_away_step_frankwolfe():
         away_steps = True,
     )
 
-    x, v, primal, dual_gap, trajectoryFW , active_set = frankwolfe.away_frank_wolfe(
+    x00 = copy.deepcopy(x0)
+
+    x, v, primal, dual_gap, trajectory_away_outplace , active_set = frankwolfe.away_frank_wolfe(
         f,
         grad,
         lmo,
-        x0,
+        x00,
         max_iteration=k,
-        line_search=frankwolfe.Adaptive(),
+        line_search=frankwolfe.Adaptive(L_est=100.0),
         print_iter=k / 10,
         epsilon=1e-5,
-        memory_mode=frankwolfe.InplaceEmphasis(),
+        momentum=0.9,
+        memory_mode=frankwolfe.OutplaceEmphasis(),
         verbose=True,
         trajectory=True,
-        away_steps=False,
+        away_steps=True,
     )
 
