@@ -4,11 +4,13 @@ This package is a python wrapper for [FrankWolfe.jl](https://github.com/ZIB-IOL/
 
 ## Usage 
 
-Each objective function must be wrapped to avoid compatibility issues with Julia.
+Because of compatibility issues between Python and Julia number types, each objective function must be wrapped if the algorithm is used with `verbose=true`.
 
 In each file, import wrapper and wrap the objective function using:
 ```python
 f = wrapper.wrap_objective_function(f).
+```
+
 A simple example : 
 
 ```python
