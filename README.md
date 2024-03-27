@@ -44,5 +44,5 @@ frankwolfe.frank_wolfe(
 )
 ```
 
-For documentation on FrankWolfe.jl : https://zib-iol.github.io/FrankWolfe.jl/dev/
+For documentation on FrankWolfe.jl: https://zib-iol.github.io/FrankWolfe.jl/dev/
 
