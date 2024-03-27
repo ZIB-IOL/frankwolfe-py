@@ -1,6 +1,6 @@
 # frankwolfe-py
 
-This package is a python wrapper for the package [FrankWolfe.jl](https://github.com/ZIB-IOL/FrankWolfe.jl)
+This package is a python wrapper for [FrankWolfe.jl](https://github.com/ZIB-IOL/FrankWolfe.jl).
 
 ## Usage 
 
