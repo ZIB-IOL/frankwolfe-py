@@ -9,7 +9,6 @@ Each objective function must be wrapped to avoid compatibility issues with Julia
 In each file, import wrapper and wrap the objective function using:
 ```python
 f = wrapper.wrap_objective_function(f).
-
 A simple example : 
 
 ```python
