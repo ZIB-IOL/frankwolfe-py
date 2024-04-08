@@ -2,6 +2,25 @@
 
 This package is a python wrapper for the package [FrankWolfe.jl](https://github.com/ZIB-IOL/FrankWolfe.jl)
 
+## Installation
+
+First, download the package [frankwolfe-py](https://github.com/ZIB-IOL/frankwolfe-py).
+
+Then place your current directory at the root of the package and execute on a terminal the following command :
+```bash  
+pip install .
+```
+
+Now you can use the FrankWolfe.jl functions with 
+```python
+from frankwolfepy import frankwolfe
+```
+
+and the wrapper of the objective function with
+```python
+from frankwolfepy import wrapper
+```
+
 ## Usage 
 
 Each objective function must be wrapped to avoid compatibility issues with Julia.
