@@ -6,7 +6,7 @@ This package is a python wrapper for the package [FrankWolfe.jl](https://github.
 
 First, download the package [frankwolfe-py](https://github.com/ZIB-IOL/frankwolfe-py).
 
-Then place your current directory at the root of the package and execute on a terminal the following command :
+Move to the root of the package and execute on a terminal the following command:
 ```bash  
 pip install .
 ```
