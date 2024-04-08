@@ -2,6 +2,25 @@
 
 This package is a python wrapper for [FrankWolfe.jl](https://github.com/ZIB-IOL/FrankWolfe.jl).
 
+## Installation
+
+First, download the package [frankwolfe-py](https://github.com/ZIB-IOL/frankwolfe-py).
+
+Move to the root of the package and execute on a terminal the following command:
+```bash  
+pip install .
+```
+
+Now you can use the FrankWolfe.jl functions with 
+```python
+from frankwolfepy import frankwolfe
+```
+
+and the wrapper of the objective function with
+```python
+from frankwolfepy import wrapper
+```
+
 ## Usage 
 
 Because of compatibility issues between Python and Julia number types, each objective function must be wrapped if the algorithm is used with `verbose=true`.
