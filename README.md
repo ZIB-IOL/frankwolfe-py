@@ -23,7 +23,7 @@ from frankwolfepy import wrapper
 
 ## Usage 
 
-Because of compatibility issues between Python and Julia number types, each objective function must be wrapped if the algorithm is used with `verbose=true`.
+Each objective function must be wrapped if the algorithm is used with `verbose=true`.
 
 In each file, import wrapper and wrap the objective function using:
 ```python
@@ -66,3 +66,11 @@ frankwolfe.frank_wolfe(
 
 For documentation on FrankWolfe.jl: https://zib-iol.github.io/FrankWolfe.jl/dev/
 
+## Wrapping arbitrary Julia evaluations
+
+The most flexible way to wrap Julia expressions is through `seval` which returns the result of evaluating a string as Julia code.
+This lets you for instance use type parameters like `Vector{Int}` or `FrankWolfe.LpNormLMO{1}`:
+```python
+import juliacall
+lmo = juliacall.Main.seval("FrankWolfe.LpNormLMO{1}(0.95)")
+```
